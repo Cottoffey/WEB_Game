@@ -1,0 +1,13 @@
+#field {
+    border-radius: 30px;
+    box-shadow: 0px 0px 20px 3px #cacaca;
+    border:none;
+}
+
+#mainWindow {
+    /* margin: auto; */
+    margin-top: 5%;
+}
+#body {
+    background-color: #f6f6f6;
+}
