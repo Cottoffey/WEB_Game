@@ -27,6 +27,7 @@ var Entity = {
 
 var Player = Entity.extend ({
     lifetime:100,
+    score: 0,
     baseCooldown: 30,
     cooldown: 0,
     damage: 20,
@@ -36,7 +37,7 @@ var Player = Entity.extend ({
     dir_y: 0,
     speed: 16,
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Player${Math.floor (this.counter / 9) + 1}`, this.pos_x, this.pos_y, this.reverse)
+        spriteManager.drawSprite (ctx, `Player${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8, this.reverse)
         if (this.counter + 1 > 35)
             this.counter = 0;
         else 
@@ -50,7 +51,7 @@ var Player = Entity.extend ({
     },
     onTouchEntity: function (obj) {
         if (obj.name.match (/Coin[\d]/)) {
-            this.lifetime += obj.value;
+            this.score += obj.value;
             obj.kill();
         }
         else if (obj.name.match (/dm[\d]/)) {
@@ -65,19 +66,17 @@ var Player = Entity.extend ({
     fire: function (dx,dy) {
         if (this.cooldown > 0)
             return;
+        this.cooldown = this.baseCooldown;
         var b = Object.create (FireBall)
         b.type = "FireBall"
-        this.cooldown = this.baseCooldown;
-        b.size_x = 10;
-        b.size_y = 10;
-        b.name = "fireball" + (++gameManager.fireNum);
+        b.name = "Fireball" + (++gameManager.fireNum);
         b.move_x = dx;
+        b.move_y = dy;
         if (dx < 0)
             b.reverse = true;
-        b.move_y = dy;
-        b.pos_x = this.pos_x + 16 * dx;
-        b.pos_y = this.pos_y + 16 * dy;
-        // console.log (this.pos_x, this.pos_y, b.pos_x, b.pos_y)
+        b.pos_x = this.pos_x + (this.size_x) * dx;
+        b.pos_y = this.pos_y + (this.size_y) * dy;
+        b.draw(gameManager.ctx);
         gameManager.entities.push(b);
     },
 })
@@ -93,23 +92,23 @@ var Enemy = Entity.extend( {
     move_y: 0,
     speed: 16,
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Enemy${Math.floor (this.counter / 9) + 1}`, this.pos_x, this.pos_y)
-        // for (let i = 0; i < mapManager.yCount; i++) {
-        //     for (let j = 0; j < mapManager.xCount; j++) {
-        //         if (this.map[i * mapManager.xCount + j] > 0)
-        //             spriteManager.drawSprite (ctx, "Coin1", j * 16, i * 16)
-        //     }
-        // }
+        spriteManager.drawSprite (ctx, `Enemy${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y- 8, this.reverse)
+        for (let i = 0; i < mapManager.yCount; i++) {
+            for (let j = 0; j < mapManager.xCount; j++) {
+                if (this.map[i * mapManager.xCount + j] > 0)
+                    spriteManager.drawSprite (ctx, "Coin1", j * 16, i * 16)
+            }
+        }
         if (this.counter + 1 > 35)
             this.counter = 0;
         else 
             this.counter++;
     },
     checkVisible: function () {
-        let x = gameManager.player.pos_x + 8
-        let y = gameManager.player.pos_y + 8
-        let x0 = this.pos_x + 8;
-        let y0 = this.pos_y + 8;
+        let x = gameManager.player.pos_x
+        let y = gameManager.player.pos_y
+        let x0 = this.pos_x;
+        let y0 = this.pos_y;
         let dx = x - x0;
         let dy = y - y0;
         if (Math.sqrt (dx * dx + dy * dy) > 96)
@@ -146,7 +145,7 @@ var Enemy = Entity.extend( {
         for (let i = 0; i < mapManager.binaryMap.length; i++)
             this.map.push (mapManager.binaryMap[i])
         let h = mapManager.xCount
-        this.map[this.pos_y * h / 16 + this.pos_x / 16] = 1;
+        this.map[(this.pos_y - 8) * h / 16 + (this.pos_x - 8) / 16] = 1;
         let d = 1;
         let flag = false;
         let f = true
@@ -167,7 +166,11 @@ var Enemy = Entity.extend( {
             d++;
         }
         this.path = []
-        while (y != this.pos_y / 16 || x != this.pos_x / 16) {
+
+        if (flag == false)
+            return
+
+        while (y != (this.pos_y - 8) / 16 || x != (this.pos_x - 8) / 16) {
             if (x + 1 < mapManager.xCount && this.map[y * h + x + 1] == d - 1) {
                 this.path.push ([-1,0])
                 x++;
@@ -200,49 +203,68 @@ var Enemy = Entity.extend( {
             } else if (dy == 0)
                 this.fire (Math.round (dx / Math.abs(dx)), 0)
 
+            this.buildPath((gameManager.player.pos_x - 8) / 16, (gameManager.player.pos_y - 8) / 16)
             // calc path 
-            this.buildPath(gameManager.player.pos_x / 16, gameManager.player.pos_y / 16)
-            // this.map = []
-            // for (let i = 0; i < mapManager.binaryMap.length; i++)
-            //     this.map.push (mapManager.binaryMap[i])
-            // let x = this.pos_x / 16
-            // let y = this.pos_y / 16
-            // this.map[y * mapManager.xCount + x] = 1;
-            // for (let i = 0; i < this.path.length; i++) {
-            //     x += this.path[i][0]
-            //     y += this.path[i][1]    
-            //     this.map[y * mapManager.xCount + x] = 1;
-            // }
-            // if (path != false) {
-            //     console.log (path)
-            // }
+            this.map = []
+            for (let i = 0; i < mapManager.binaryMap.length; i++)
+                this.map.push (mapManager.binaryMap[i])
+            let x = (this.pos_x - 8) / 16
+            let y = (this.pos_y - 8) / 16
+            this.map[y * mapManager.xCount + x] = 1;
+            for (let i = 0; i < this.path.length; i++) {
+                x += this.path[i][0]
+                y += this.path[i][1]    
+                this.map[y * mapManager.xCount + x] = 1;
+            }
         }
         if (this.break > 0)
             this.break--
-        else if (this.path.length > 0 && this.break == 0) {
+        else if (this.path.length > 0) {
             this.break = 12
             this.move_x = this.path[0][0];
             this.move_y = this.path[0][1];
+            if (this.move_x < 0)
+                this.reverse = true;
+            else if (this.move_x > 0)
+                this.reverse = false;
             this.path.splice (0, 1)
+        } 
+        else if (Math.random() > 0.99) {
+            this.break = 12
+            let x = (this.pos_x - 8) / 16 + Math.floor(Math.random() * 10) - 5;
+            let y = (this.pos_y - 8) / 16 + Math.floor(Math.random() * 10) - 5;
+            while (mapManager.binaryMap[y * mapManager.xCount + x] != 0) {
+                x = (this.pos_x - 8) / 16 + Math.floor(Math.random() * 10) - 5;
+                y = (this.pos_y - 8) / 16 + Math.floor(Math.random() * 10) - 5;
+            }
+            this.buildPath (x, y);
+            this.map = []
+            for (let i = 0; i < mapManager.binaryMap.length; i++)
+                this.map.push (mapManager.binaryMap[i])
+            x = (this.pos_x - 8) / 16
+            y = (this.pos_y - 8) / 16
+            this.map[y * mapManager.xCount + x] = 1;
+            for (let i = 0; i < this.path.length; i++) {
+                x += this.path[i][0]
+                y += this.path[i][1]    
+                this.map[y * mapManager.xCount + x] = 1;
+            }
+            // let s = Math.random();
+            // if (s > 0.95) {
+            //     if (x >= 0.7)
+            //         this.move_x = -1
+            //     else if (x >= 0.4)
+            //         this.move_x = 1;
+            //     else 
+            //         this.move_x = 0;
+            //     if (y >= 0.7)
+            //         this.move_y = -1
+            //     else if (y >= 0.4)
+            //         this.move_y = 1;
+            //     else 
+            //         this.move_y = 0;
+            // }
         }
-
-        // let s = Math.random();
-        // let x = Math.random();
-        // let y = Math.random()
-        // if (s > 0.95) {
-        //     if (x >= 0.7)
-        //         this.move_x = -1
-        //     else if (x >= 0.4)
-        //         this.move_x = 1;
-        //     else 
-        //         this.move_x = 0;
-        //     if (y >= 0.7)
-        //         this.move_y = -1
-        //     else if (y >= 0.4)
-        //         this.move_y = 1;
-        //     else 
-        //         this.move_y = 0;
-        // }
         if (this.cooldown > 0)
             this.cooldown--;
     },
@@ -253,16 +275,15 @@ var Enemy = Entity.extend( {
         this.cooldown = this.baseCooldown;
         var b = Object.create (FireBall)
         b.type = "FireBall"
-        b.size_x = 10;
-        b.size_y = 10;
         b.name = "Fireball" + (++gameManager.fireNum);
         b.move_x = dx;
         b.move_y = dy;
         if (dx < 0)
             b.reverse = true;
-        b.pos_x = this.pos_x + dx * 16;
-        b.pos_y = this.pos_y + dy * 16;
-        b.update()
+        b.pos_x = this.pos_x + dx * this.size_x;
+        b.pos_y = this.pos_y + dy * this.size_y;
+        b.draw(gameManager.ctx);
+        // b.update()
         gameManager.entities.push(b);
     },
 })
@@ -270,7 +291,7 @@ var Enemy = Entity.extend( {
 var Hp = Entity.extend ( {
     value: 20,
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Hp${Math.floor (this.counter / 9) + 1}`, this.pos_x, this.pos_y)
+        spriteManager.drawSprite (ctx, `Hp${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8)
         if (this.counter + 1 > 35)
             this.counter = 0;
         else 
@@ -281,7 +302,7 @@ var Hp = Entity.extend ( {
 var Damage = Entity.extend( {
     value: 5,
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Damage${Math.floor (this.counter / 9) + 1}`, this.pos_x, this.pos_y)
+        spriteManager.drawSprite (ctx, `Damage${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8)
         if (this.counter + 1 > 35)
             this.counter = 0;
         else 
@@ -291,7 +312,7 @@ var Damage = Entity.extend( {
 
 var Flag = Entity.extend( {
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Flag${Math.floor (this.counter / 9) + 1}`, this.pos_x, this.pos_y)
+        spriteManager.drawSprite (ctx, `Flag${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8)
         if (this.counter + 1 > 35)
             this.counter = 0;
         else 
@@ -301,7 +322,7 @@ var Flag = Entity.extend( {
 
 var Candlestick = Entity.extend( {
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Candlestick${Math.floor (this.counter / 9) + 1}`, this.pos_x, this.pos_y)
+        spriteManager.drawSprite (ctx, `Candlestick${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8)
         if (this.counter + 1 > 35)
             this.counter = 0;
         else 
@@ -312,10 +333,12 @@ var Candlestick = Entity.extend( {
 var FireBall = Entity.extend ({
     move_x: 0,
     move_y: 0,
+    size_x: 12,
+    size_y: 12,
     damage: 20,
     speed: 2,
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `FireBall${Math.floor (this.counter / 9) + 1}`, this.pos_x, this.pos_y, this.reverse)
+        spriteManager.drawSprite (ctx, `FireBall${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8, this.reverse)
         if (this.counter + 1 > 35)
             this.counter = 0;
         else 
@@ -340,7 +363,7 @@ var FireBall = Entity.extend ({
 
 var Score = Entity.extend ({
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Coin${Math.floor (this.counter / 9) + 1}`, this.pos_x, this.pos_y)
+        spriteManager.drawSprite (ctx, `Coin${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8)
         if (this.counter + 1 > 35)
             this.counter = 0;
         else 
@@ -436,7 +459,6 @@ var physicManager = {
         return null;
     }
 }
-
 
 var spriteManager = {
     image: new Image(),
@@ -562,7 +584,7 @@ var mapManager = {
                 this.binaryMap[i] = -1
         for (let i = 0; i < gameManager.entities.length; i++) {
             if (gameManager.entities[i].type == "Candlestick") {
-                this.binaryMap[gameManager.entities[i].pos_y / 16 *  mapManager.xCount + gameManager.entities[i].pos_x / 16] = -1
+                this.binaryMap[(gameManager.entities[i].pos_y - 8) / 16 *  mapManager.xCount + (gameManager.entities[i].pos_x - 8) / 16] = -1
             }
         }
         console.log(this.binaryMap)
@@ -693,8 +715,8 @@ var mapManager = {
                             obj.name = e.name;
                             obj.type = e.type
                             obj.id = e.id
-                            obj.pos_x = Math.round (e.x / this.tSize.x ) * this.tSize.x
-                            obj.pos_y = Math.round (e.y / this.tSize.y ) * this.tSize.y
+                            obj.pos_x = Math.round (e.x / this.tSize.x ) * this.tSize.x + 8
+                            obj.pos_y = Math.round (e.y / this.tSize.y ) * this.tSize.y + 8
                             // obj.size_x = e.width;
                             // obj.size_y = e.height;
                             gameManager.entities.push (obj);
