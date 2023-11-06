@@ -146,6 +146,7 @@
                  "x":31.4301304628206,
                  "y":28.0966317773699
                 }, 
+                
                 {
                  "height":10.000496056352,
                  "id":12,
@@ -421,6 +422,50 @@
                  "width":16.1913,
                  "x":240.488109115036,
                  "y":273.584997284092
+                }, 
+                {
+                 "height":0,
+                 "id":38,
+                 "name":"Enemy1",
+                 "rotation":0,
+                 "type":"Enemy",
+                 "visible":true,
+                 "width":0,
+                 "x":419.544620268863,
+                 "y":288.109529242522
+                }, 
+                {
+                 "height":0,
+                 "id":39,
+                 "name":"Enemy1",
+                 "rotation":0,
+                 "type":"Enemy",
+                 "visible":true,
+                 "width":0,
+                 "x":444.307753360782,
+                 "y":37.1446996378789
+                }, 
+                {
+                 "height":0,
+                 "id":40,
+                 "name":"Enemy1",
+                 "rotation":0,
+                 "type":"Enemy",
+                 "visible":true,
+                 "width":0,
+                 "x":450.974750731683,
+                 "y":239.535691254527
+                }, 
+                {
+                 "height":0,
+                 "id":41,
+                 "name":"Enemy1",
+                 "rotation":0,
+                 "type":"Enemy",
+                 "visible":true,
+                 "width":0,
+                 "x":275.251748598641,
+                 "y":103.338459248971
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -429,7 +474,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":38,
+ "nextobjectid":42,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.10.2",

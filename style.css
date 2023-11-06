@@ -6,8 +6,15 @@
 
 #mainWindow {
     /* margin: auto; */
+    width: 1360px;
+    display: flex;
     margin-top: 5%;
 }
+
+#info, #after {
+    width: 200px;
+}
+
 #body {
     background-color: #f6f6f6;
 }
