@@ -26,7 +26,7 @@ var Entity = {
 }
 
 var Player = Entity.extend ({
-    lifetime:100,
+    lifetime:1000,
     score: 0,
     baseCooldown: 30,
     cooldown: 0,
@@ -50,16 +50,23 @@ var Player = Entity.extend ({
         physicManager.update (this)
     },
     onTouchEntity: function (obj) {
-        if (obj.name.match (/Coin[\d]/)) {
+        if (obj.type == "Door") {
+            console.log ("Dooor")
+            gameManager.newlevel = "./Level_2.json"
+        }
+        if (obj.type.match ("Score")) {
             this.score += obj.value;
+            soundManager.play ("./Sounds/04_sack_open_3.wav")
             obj.kill();
         }
-        else if (obj.name.match (/dm[\d]/)) {
+        else if (obj.type.match ("Damage")) {
             this.baseCooldown -= obj.value;
+            soundManager.play ("./Sounds/04_sack_open_3.wav")
             obj.kill();
         } 
-        else if (obj.name.match (/hp[\d]/)) {
+        else if (obj.type.match ("Hp")) {
             this.lifetime += obj.value;
+            soundManager.play ("./Sounds/04_sack_open_3.wav")
             obj.kill();
         }
     },
@@ -70,6 +77,7 @@ var Player = Entity.extend ({
         var b = Object.create (FireBall)
         b.type = "FireBall"
         b.name = "Fireball" + (++gameManager.fireNum);
+        b.id = gameManager.fireNum;
         b.move_x = dx;
         b.move_y = dy;
         if (dx < 0)
@@ -78,6 +86,7 @@ var Player = Entity.extend ({
         b.pos_y = this.pos_y + (this.size_y) * dy;
         b.draw(gameManager.ctx);
         gameManager.entities.push(b);
+        soundManager.play ("./Sounds/Fireball.mp3", {volume: 0.5})
     },
 })
 
@@ -93,12 +102,12 @@ var Enemy = Entity.extend( {
     speed: 16,
     draw: function (ctx) {
         spriteManager.drawSprite (ctx, `Enemy${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y- 8, this.reverse)
-        for (let i = 0; i < mapManager.yCount; i++) {
-            for (let j = 0; j < mapManager.xCount; j++) {
-                if (this.map[i * mapManager.xCount + j] > 0)
-                    spriteManager.drawSprite (ctx, "Coin1", j * 16, i * 16)
-            }
-        }
+        // for (let i = 0; i < mapManager.yCount; i++) {
+        //     for (let j = 0; j < mapManager.xCount; j++) {
+        //         if (this.map[i * mapManager.xCount + j] == -1)
+        //             spriteManager.drawSprite (ctx, "Coin1", j * 16, i * 16)
+        //     }
+        // }
         if (this.counter + 1 > 35)
             this.counter = 0;
         else 
@@ -205,17 +214,17 @@ var Enemy = Entity.extend( {
 
             this.buildPath((gameManager.player.pos_x - 8) / 16, (gameManager.player.pos_y - 8) / 16)
             // calc path 
-            this.map = []
-            for (let i = 0; i < mapManager.binaryMap.length; i++)
-                this.map.push (mapManager.binaryMap[i])
-            let x = (this.pos_x - 8) / 16
-            let y = (this.pos_y - 8) / 16
-            this.map[y * mapManager.xCount + x] = 1;
-            for (let i = 0; i < this.path.length; i++) {
-                x += this.path[i][0]
-                y += this.path[i][1]    
-                this.map[y * mapManager.xCount + x] = 1;
-            }
+            // this.map = []
+            // for (let i = 0; i < mapManager.binaryMap.length; i++)
+            //     this.map.push (mapManager.binaryMap[i])
+            // let x = (this.pos_x - 8) / 16
+            // let y = (this.pos_y - 8) / 16
+            // this.map[y * mapManager.xCount + x] = 1;
+            // for (let i = 0; i < this.path.length; i++) {
+            //     x += this.path[i][0]
+            //     y += this.path[i][1]    
+            //     this.map[y * mapManager.xCount + x] = 1;
+            // }
         }
         if (this.break > 0)
             this.break--
@@ -238,31 +247,16 @@ var Enemy = Entity.extend( {
                 y = (this.pos_y - 8) / 16 + Math.floor(Math.random() * 10) - 5;
             }
             this.buildPath (x, y);
-            this.map = []
-            for (let i = 0; i < mapManager.binaryMap.length; i++)
-                this.map.push (mapManager.binaryMap[i])
-            x = (this.pos_x - 8) / 16
-            y = (this.pos_y - 8) / 16
-            this.map[y * mapManager.xCount + x] = 1;
-            for (let i = 0; i < this.path.length; i++) {
-                x += this.path[i][0]
-                y += this.path[i][1]    
-                this.map[y * mapManager.xCount + x] = 1;
-            }
-            // let s = Math.random();
-            // if (s > 0.95) {
-            //     if (x >= 0.7)
-            //         this.move_x = -1
-            //     else if (x >= 0.4)
-            //         this.move_x = 1;
-            //     else 
-            //         this.move_x = 0;
-            //     if (y >= 0.7)
-            //         this.move_y = -1
-            //     else if (y >= 0.4)
-            //         this.move_y = 1;
-            //     else 
-            //         this.move_y = 0;
+            // this.map = []
+            // for (let i = 0; i < mapManager.binaryMap.length; i++)
+            //     this.map.push (mapManager.binaryMap[i])
+            // x = (this.pos_x - 8) / 16
+            // y = (this.pos_y - 8) / 16
+            // this.map[y * mapManager.xCount + x] = 1;
+            // for (let i = 0; i < this.path.length; i++) {
+            //     x += this.path[i][0]
+            //     y += this.path[i][1]    
+            //     this.map[y * mapManager.xCount + x] = 1;
             // }
         }
         if (this.cooldown > 0)
@@ -276,6 +270,7 @@ var Enemy = Entity.extend( {
         var b = Object.create (FireBall)
         b.type = "FireBall"
         b.name = "Fireball" + (++gameManager.fireNum);
+        b.id = gameManager.fireNum;
         b.move_x = dx;
         b.move_y = dy;
         if (dx < 0)
@@ -285,6 +280,7 @@ var Enemy = Entity.extend( {
         b.draw(gameManager.ctx);
         // b.update()
         gameManager.entities.push(b);
+        soundManager.play ("./Sounds/Fireball.mp3", {volume:0.5})
     },
 })
 
@@ -351,17 +347,30 @@ var FireBall = Entity.extend ({
         this.kill();
     },
     onTouchEntity: function (obj) {
-        if (obj.name.match (/Enemy[\d*]/) || obj.name.match (/Player/)) {
+        if (obj.type == "Enemy" || obj.type == "Player") {
             obj.lifetime -= this.damage;
             console.log(obj.lifetime);
-            if (obj.lifetime <= 0)
+            if (obj.lifetime <= 0) {
+                if (obj.type == "Enemy") {
+                    soundManager.playWorldSound ("./Sounds/24_orc_death_spin.wav", obj.pos_x, obj.pos_y)
+                    gameManager.player.score += 20;
+                }
+                else if (obj.type == "Player")
+                    soundManager.play ("./Sounds/14_human_death_spin.wav")
                 obj.kill();
+            } else  {
+                if (obj.type == 'Player')
+                    soundManager.play ("./Sounds/11_human_damage_3.wav")
+                else if (obj.type == "Enemy")
+                    soundManager.play ("./Sounds/21_orc_damage_1.wav")
+            }
             this.kill()
         }
     },
 })
 
 var Score = Entity.extend ({
+    value: 10,
     draw: function (ctx) {
         spriteManager.drawSprite (ctx, `Coin${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8)
         if (this.counter + 1 > 35)
@@ -417,7 +426,6 @@ var physicManager = {
         //     } else 
         //         obj.break = 3;
 
-
         var newx = obj.pos_x + Math.floor (obj.move_x * obj.speed)
         var newy = obj.pos_y + Math.floor (obj.move_y * obj.speed);
         // console.log (newx, newy)
@@ -432,6 +440,10 @@ var physicManager = {
         if ((ts == 12 || ts == 13 || ts == 15 || ts == 17 || ts == 22 || ts == 23 || ts == 24 || ts == 33 || ts == 32 || ts == 35 || ts == 25) && (e == null || obj.type == "FireBall")) {
             obj.pos_x = newx;
             obj.pos_y = newy;
+            if (obj.type == "Player")
+                soundManager.play (`./Sounds/16_human_walk_stone_${Math.floor (Math.random() * 3) + 1}.wav`)
+            else if (obj.type == "Enemy")
+                soundManager.playWorldSound (`./Sounds/25_orc_walk_stone_${Math.floor (Math.random() * 3) + 1}.wav`, obj.pos_x, obj.pos_y)
         }
         else 
             return "break"
@@ -447,7 +459,7 @@ var physicManager = {
     entityAtxy: function (obj, x, y) {
         for (let i = 0; i < gameManager.entities.length; i++) {
             let e = gameManager.entities[i];
-            if (e.name !== obj.name) {
+            if (e.id !== obj.id) {
                 if (x + obj.size_x < e.pos_x ||
                     y + obj.size_y < e.pos_y ||
                     y > e.pos_y + e.size_y ||
@@ -587,7 +599,7 @@ var mapManager = {
                 this.binaryMap[(gameManager.entities[i].pos_y - 8) / 16 *  mapManager.xCount + (gameManager.entities[i].pos_x - 8) / 16] = -1
             }
         }
-        console.log(this.binaryMap)
+        // console.log(this.binaryMap)
     },
     loadMap: function  (path) {
         var request = new XMLHttpRequest();
@@ -719,15 +731,28 @@ var mapManager = {
                             obj.pos_y = Math.round (e.y / this.tSize.y ) * this.tSize.y + 8
                             // obj.size_x = e.width;
                             // obj.size_y = e.height;
-                            gameManager.entities.push (obj);
-                            if (obj.name === "Player")
-                                gameManager.initPlayer (obj);
+                            if (obj.type === "Player") {
+                                if (gameManager.player == null) {
+                                    gameManager.initPlayer (obj);
+                                    gameManager.entities.push (obj);
+                                }
+                                else {
+                                    gameManager.player.pos_x = obj.pos_x;
+                                    gameManager.player.pos_y = obj.pos_y
+                                    gameManager.player.id = obj.id 
+                                    gameManager.entities.push (gameManager.player);
+                                }
+                            }
+                            else {
+                                gameManager.entities.push (obj);
+                            }
                         }
                         catch (ex) {
                             console.log("Error while creating: [" + e.gid + "] " + e.type + ", " + ex);
                         }
                     }
                 }
+                gameManager.isAllLoaded = true;
             }
         }
     },
@@ -740,12 +765,105 @@ var mapManager = {
     }
 }
 
+var soundManager = {
+    clips: {},
+    context: null,
+    loaded: false,
+    init: function () {
+        this.context = new AudioContext();
+    },
+
+    load: function (path, callback) {
+        if (this.clips[path]) {
+            // callback (this.clips[path]);
+            return;
+        }
+        var clip = {path:path, buffer:null, loaded:false}
+        clip.play = function (volume, loop) {
+            soundManager.play (this.path, {looping: loop ? loop : false, volume : volume ? volume : 1})
+        }
+        this.clips[path] = clip;
+        var request = new XMLHttpRequest();
+        request.open ("GET", path, true);
+        request.responseType = "arraybuffer"
+        request.onload = function () {
+            soundManager.context.decodeAudioData (request.response, function (buffer) {
+                clip.buffer = buffer;
+                clip.loaded = true;
+                callback(clip)
+            })
+        }
+        request.send();
+        soundManager.loaded = true;
+    },
+    loadArray: function (array) {
+        for (let i = 0; i < array.length; i++) {
+            soundManager.load (array[i], function () {
+                if (array.length == Object.keys (soundManager.clips).length) {
+                    for (var sd in soundManager.clips)
+                        if (!soundManager.clips[sd].loaded)
+                            return 
+                    soundManager.loaded = true;
+                }
+            })
+        }
+    },
+    play: function (path, settings) {
+        if (!soundManager.loaded) {
+            setTimeout(() => {
+                soundManager.play (path,settings)
+            }, 1000);
+            return;
+        }
+
+        var looping = false;
+        var volume = 1;
+        if (settings) {
+            if (settings.looping)
+                looping = settings.looping
+            if (settings.volume)
+                volume = settings.volume
+        }
+        var sd = this.clips[path]
+        if (sd == null)
+            return false;
+
+        var gainNode = this.context.createGain ? this.context.createGain() : this.context.createGainNode;
+        gainNode.connect (this.context.destination)
+
+        var sound = soundManager.context.createBufferSource();
+        sound.buffer = sd.buffer;
+        sound.connect (gainNode)
+        sound.loop = looping
+        gainNode.gain.value = volume;
+        sound.start(0);
+        return true;
+    },
+    playWorldSound: function (path, x, y) {
+        if (gameManager.player == null)
+            return;
+        var viewSize = Math.max (mapManager.view.w, mapManager.view.h) * 0.8;
+        var dx = Math.abs (gameManager.player.pos_x - x)
+        var dy = Math.abs (gameManager.player.pos_y - y)
+        var distance = Math.sqrt (dx * dx + dy * dy);
+        var norm = distance / viewSize;
+        if (norm > 1)
+            norm = 1;
+        var volume = 1.0 - norm;
+        if (!volume)
+            return
+        soundManager.play (path, {looping:false, volume: volume})
+    }
+}
+
 var gameManager = {
     ctx: null,
     factory: {},
     entities: [],
-    fireNum: 0,
+    fireNum: 1000,
+    isAllLoaded: false,
     player: null,
+    newlevel: null,
     laterKill: [],
     initPlayer: function (obj) {
         this.player = obj;
@@ -754,7 +872,7 @@ var gameManager = {
         this.laterKill.push (obj)
     },
     update: function () {
-        if (this.player === null)
+        if (this.isAllLoaded == false)
             return;
         this.player.move_x = 0;
         this.player.move_y = 0;
@@ -802,13 +920,16 @@ var gameManager = {
         mapManager.centerAt (this.player.pos_x, this.player.pos_y);
         mapManager.draw(this.ctx);
         this.draw(this.ctx);
-        document.getElementById("hp").innerHTML = `HP: ${this.player.lifetime}`       
+        document.getElementById("hp").innerHTML = `HP: ${this.player.lifetime}`  
+        document.getElementById("score").innerHTML = `Score: ${this.player.score}`     
     },
     draw: function(ctx) {
         for (let e = 0; e < this.entities.length; e++)
             this.entities[e].draw (ctx)
     },
     loadAll: function(mapname) {
+        this.entities = []
+        mapManager = Object.create (mapManager)
         mapManager.loadMap (mapname)
         spriteManager.loadAtlas ("./atlas.json", "./Images/sprite.png")
         gameManager.factory["Player"] = Player;
@@ -826,6 +947,18 @@ var gameManager = {
     },
     updateWorld: function () {
         gameManager.update();
+        if (gameManager.newlevel != null) {
+            gameManager.isAllLoaded = false;
+            mapManager.imgLoadCount = 0;
+            mapManager.tLayers = new Array();
+            mapManager.tilesets = new Array();
+            mapManager.jsonLoaded = false;
+            mapManager.imgLoaded = false;
+            spriteManager.jsonLoaded = false;
+            spriteManager.imgLoaded = false
+            gameManager.loadAll (gameManager.newlevel)
+            gameManager.newlevel = null;
+        }
     },
     play: function() {
         setInterval (this.updateWorld, 16.166666);
@@ -839,7 +972,22 @@ ctx.scale (4,4);
 // setInterval (() => {
 //     mapManager.draw (ctx);
 // }, 500)
-
+soundManager.init()
+soundManager.load ("./Sounds/Fireball.mp3", function() {})
+soundManager.loadArray ([
+    "./Sounds/Fireball.mp3",
+    "./Sounds/24_orc_death_spin.wav",
+    "./Sounds/11_human_damage_3.wav",
+    "./Sounds/21_orc_damage_1.wav",
+    "./Sounds/14_human_death_spin.wav",
+    "./Sounds/25_orc_walk_stone_1.wav",
+    "./Sounds/25_orc_walk_stone_2.wav",
+    "./Sounds/25_orc_walk_stone_3.wav",
+    "./Sounds/16_human_walk_stone_1.wav",
+    "./Sounds/16_human_walk_stone_2.wav",
+    "./Sounds/16_human_walk_stone_3.wav",
+    "./Sounds/04_sack_open_3.wav"
+])
 gameManager.ctx = ctx;
 gameManager.loadAll("./Level_1.json");
 gameManager.play();
