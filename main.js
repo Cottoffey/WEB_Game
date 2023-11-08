@@ -19,7 +19,7 @@ var Entity = {
 }
 
 var Player = Entity.extend ({
-    lifetime:1000,
+    lifetime:100,
     score: 0,
     baseCooldown: 30,
     cooldown: 0,
