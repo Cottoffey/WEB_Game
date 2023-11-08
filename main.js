@@ -352,8 +352,10 @@ var FireBall = Entity.extend ({
                     soundManager.playWorldSound ("./Sounds/24_orc_death_spin.wav", obj.pos_x, obj.pos_y)
                     gameManager.player.score += 20;
                 }
-                else if (obj.type == "Player")
+                else if (obj.type == "Player") {
                     soundManager.play ("./Sounds/14_human_death_spin.wav")
+                    gameManager.stopGame()
+                }
                 obj.kill();
             } else  {
                 if (obj.type == 'Player')
