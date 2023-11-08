@@ -7,13 +7,6 @@ var Entity = {
     counter: 0,
     kill: function() {
         gameManager.laterKill.push(this)
-        // for (let i = 0; i < gameManager.entities.length; i++)
-        //     if (gameManager.entities[i].name == this.name){
-        //         console.log (gameManager.entities[i].name, this.name)
-        //         gameManager.entities.splice (i,1)
-        //         console.log("EEE")
-        //         return;
-        //     }
     },
     extend: function (extendProto) {
         var object = Object.create(this);
@@ -50,11 +43,14 @@ var Player = Entity.extend ({
         physicManager.update (this)
     },
     onTouchEntity: function (obj) {
-        if (obj.type == "Door") {
+        if (obj.name == "DoorLevel_2") {
             console.log ("Dooor")
             gameManager.newlevel = "./Level_2.json"
         }
-        if (obj.type.match ("Score")) {
+        else if (obj.name == "DoorFinish") {
+            gameManager.stopGame();
+        }
+        else if (obj.type.match ("Score")) {
             this.score += obj.value;
             soundManager.play ("./Sounds/04_sack_open_3.wav")
             obj.kill();
@@ -102,6 +98,7 @@ var Enemy = Entity.extend( {
     speed: 16,
     draw: function (ctx) {
         spriteManager.drawSprite (ctx, `Enemy${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y- 8, this.reverse)
+        // if need visualization
         // for (let i = 0; i < mapManager.yCount; i++) {
         //     for (let j = 0; j < mapManager.xCount; j++) {
         //         if (this.map[i * mapManager.xCount + j] == -1)
@@ -382,7 +379,7 @@ var Score = Entity.extend ({
 
 var Door = Entity.extend({
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, "Coin1", this.pos_x, this.pos_y)
+        spriteManager.drawSprite (ctx, "Coin1",this.pos_x - 8, this.pos_y - 8)
     },
 })
 
@@ -401,7 +398,6 @@ var eventsManager = {
         canvas.addEventListener ("mousedown", this.onMouseDown);
         canvas.addEventListener ("mouseup", this.onMouseUp);
         document.body.addEventListener ("keydown", this.onKeyDown);
-        // обработчики действий 
     },
     onKeyDown: function (event) {
         var action = eventsManager.bind[event.keyCode]
@@ -419,12 +415,6 @@ var physicManager = {
             obj.dir_x = obj.move_x
             obj.dir_y = obj.move_y
         }
-        // if (obj.type == "FireBall")
-        //     if (obj.break > 0) {
-        //         obj.break--
-        //         return "Stop"
-        //     } else 
-        //         obj.break = 3;
 
         var newx = obj.pos_x + Math.floor (obj.move_x * obj.speed)
         var newy = obj.pos_y + Math.floor (obj.move_y * obj.speed);
@@ -610,8 +600,6 @@ var mapManager = {
         }
         request.open ("GET", path, true);
         request.send();
-        // this.parseMap (path);
-        // console.log("Load map finish")
     },
 
     draw: function  (ctx) {
@@ -727,8 +715,8 @@ var mapManager = {
                             obj.name = e.name;
                             obj.type = e.type
                             obj.id = e.id
-                            obj.pos_x = Math.round (e.x / this.tSize.x ) * this.tSize.x + 8
-                            obj.pos_y = Math.round (e.y / this.tSize.y ) * this.tSize.y + 8
+                            obj.pos_x = Math.floor (e.x / this.tSize.x ) * this.tSize.x + 8
+                            obj.pos_y = Math.floor (e.y / this.tSize.y ) * this.tSize.y + 8
                             // obj.size_x = e.width;
                             // obj.size_y = e.height;
                             if (obj.type === "Player") {
@@ -857,6 +845,7 @@ var soundManager = {
 }
 
 var gameManager = {
+    interval: null,
     ctx: null,
     factory: {},
     entities: [],
@@ -946,7 +935,6 @@ var gameManager = {
         eventsManager.setup (canvas);
     },
     updateWorld: function () {
-        gameManager.update();
         if (gameManager.newlevel != null) {
             gameManager.isAllLoaded = false;
             mapManager.imgLoadCount = 0;
@@ -959,19 +947,81 @@ var gameManager = {
             gameManager.loadAll (gameManager.newlevel)
             gameManager.newlevel = null;
         }
+        gameManager.update();
     },
     play: function() {
-        setInterval (this.updateWorld, 16.166666);
-    }
+        this.interval = setInterval (this.updateWorld, 16.166666);
+    },
+    stopGame: function () {
+        clearInterval(this.interval);
+        let name = localStorage["username"];
+        localStorage[name] = this.player.score;
+        this.addRecords();
+    },
+    addRecords: function () {
+        let dialog = document.getElementById("dialog")
+        let table = dialog.getElementsByTagName("table")[0]
+        let tbody = table.getElementsByTagName("tbody")[0]
+        table.removeChild(tbody);
+        tbody = document.createElement("tbody");
+
+        let row = document.createElement("tr");
+        let th = document.createElement("th");
+        let Text = document.createTextNode ("Player")
+        th.appendChild(Text);
+        row.appendChild(th);
+
+        Text = document.createTextNode ("Scores");
+        th = document.createElement("th");
+        th.appendChild(Text);
+        row.appendChild(th);
+        tbody.appendChild(row);
+        
+        let arr = []
+        for (let i = 0; i < localStorage.length; i++) {
+            let name = localStorage.key(i)
+            if (name == "username")
+                continue
+            arr.push ({name: name, scores: localStorage.getItem (name)})
+        }
+        arr.sort ((a,b) => b.scores - a.scores)
+    
+        for (let i = 0; i < arr.length; i++) {
+            row = document.createElement("tr");
+            Text = document.createTextNode (arr[i].name);
+            let td = document.createElement("td");
+            td.appendChild (Text);
+            row.appendChild (td);
+
+            td = document.createElement("td");
+            Text = document.createTextNode (arr[i].scores);
+            td.appendChild(Text);
+            row.appendChild(td);
+
+            tbody.appendChild(row);
+        }
+        table.appendChild(tbody);
+        dialog.showModal();
+    },
+
 }
 
 let canvas = document.getElementById ("field");
 let ctx = canvas.getContext ("2d");
+document.getElementById ("player").innerHTML = "Player: " + localStorage["username"];
+document.getElementById ("restart").onclick = () => {
+    document.getElementById("dialog").close();
+    gameManager.player = null;
+    gameManager.newlevel = "./Level_1.json"
+    gameManager.updateWorld()
+    gameManager.play()
+}
+document.getElementById ("new_user").onclick = () => {
+    document.getElementById("dialog").close();
+    window.location = "index.html";
+}
 ctx.imageSmoothingEnabled = false;
 ctx.scale (4,4);
-// setInterval (() => {
-//     mapManager.draw (ctx);
-// }, 500)
 soundManager.init()
 soundManager.load ("./Sounds/Fireball.mp3", function() {})
 soundManager.loadArray ([

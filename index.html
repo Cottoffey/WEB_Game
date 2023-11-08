@@ -1,25 +1,18 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link href="style.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" type="text/css" href="IndexStyle.css">
+        <script src="index.js?version={version}"></script>
     </head>
     <body>
-        <div id="main" align="center">
-            <div id="mainWindow" align="center">
-                <div id="info", align="left">
-                    <h2 id="hp"></h2> 
-                    <h2 id="score"></h2>
-                </div>
-                <canvas id="field" width="960" height="960"></canvas>
-                <div id="after">
-                </div>
-            </div>
-        </div id="main">
+        <div id="main">
+            <h1>Dungeon</h1>
+            <form action="main.html">
+                <p>
+                        <input id="input" name="username" placeholder="User name"><br>
+                </p>
+                <button id="enter" onclick="store(username);">Game</button>
+            </form>
+        </div>
     </body>
-    <head>
-        <!-- <script type="module" src="./spriteManager.js?version={version}"></script>
-        <script type="module" src="./mapManager.js?version={version}"></script>
-        <script type="module" src="./gameManager.js?version={version}"></script> -->
-        <script type="module" src="./main.js?version={version}"></script>
-    </head>
 </html>

@@ -684,13 +684,13 @@
                 {
                  "height":0,
                  "id":53,
-                 "name":"DoorLevel_2",
+                 "name":"DoorFinish",
                  "rotation":0,
                  "type":"Door",
                  "visible":true,
                  "width":0,
-                 "x":957.186523728982,
-                 "y":28.0192518157397
+                 "x":952.00,
+                 "y":23.47
                 }, 
                 {
                  "height":0,
@@ -1016,7 +1016,19 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"Floor.tsj"
+         "source":"Floor.tsj",
+         "image":"..\/Images\/Dungeon_Tileset.png",
+              "imageheight":160,
+              "imagewidth":160,
+              "margin":0,
+              "name":"Floor",
+              "spacing":0,
+              "tilecount":100,
+              "tiledversion":"1.10.2",
+              "tileheight":16,
+              "tilewidth":16,
+              "type":"tileset",
+              "version":"1.10"
         }],
  "tilewidth":16,
  "type":"map",
