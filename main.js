@@ -21,7 +21,7 @@ var Entity = {
 var Player = Entity.extend ({
     lifetime:100,
     score: 0,
-    baseCooldown: 30,
+    baseCooldown: 40,
     cooldown: 0,
     damage: 20,
     move_x: 0,
@@ -30,8 +30,8 @@ var Player = Entity.extend ({
     dir_y: 0,
     speed: 16,
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Player${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8, this.reverse)
-        if (this.counter + 1 > 35)
+        spriteManager.drawSprite (ctx, `Player${Math.floor (this.counter / 12) + 1}`, this.pos_x - 8, this.pos_y - 8, this.reverse)
+        if (this.counter + 1 > 47)
             this.counter = 0;
         else 
             this.counter++;
@@ -88,7 +88,7 @@ var Player = Entity.extend ({
 
 var Enemy = Entity.extend( {
     lifetime: 60,
-    baseCooldown: 30,
+    baseCooldown: 40,
     cooldown: 0,
     map: [],
     path: [],
@@ -97,7 +97,7 @@ var Enemy = Entity.extend( {
     move_y: 0,
     speed: 16,
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Enemy${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y- 8, this.reverse)
+        spriteManager.drawSprite (ctx, `Enemy${Math.floor (this.counter / 12) + 1}`, this.pos_x - 8, this.pos_y- 8, this.reverse)
         // if need visualization
         // for (let i = 0; i < mapManager.yCount; i++) {
         //     for (let j = 0; j < mapManager.xCount; j++) {
@@ -105,7 +105,7 @@ var Enemy = Entity.extend( {
         //             spriteManager.drawSprite (ctx, "Coin1", j * 16, i * 16)
         //     }
         // }
-        if (this.counter + 1 > 35)
+        if (this.counter + 1 >47)
             this.counter = 0;
         else 
             this.counter++;
@@ -226,7 +226,7 @@ var Enemy = Entity.extend( {
         if (this.break > 0)
             this.break--
         else if (this.path.length > 0) {
-            this.break = 12
+            this.break = 16
             this.move_x = this.path[0][0];
             this.move_y = this.path[0][1];
             if (this.move_x < 0)
@@ -236,7 +236,7 @@ var Enemy = Entity.extend( {
             this.path.splice (0, 1)
         } 
         else if (Math.random() > 0.99) {
-            this.break = 12
+            this.break = 16
             let x = (this.pos_x - 8) / 16 + Math.floor(Math.random() * 10) - 5;
             let y = (this.pos_y - 8) / 16 + Math.floor(Math.random() * 10) - 5;
             while (mapManager.binaryMap[y * mapManager.xCount + x] != 0) {
@@ -284,8 +284,8 @@ var Enemy = Entity.extend( {
 var Hp = Entity.extend ( {
     value: 20,
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Hp${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8)
-        if (this.counter + 1 > 35)
+        spriteManager.drawSprite (ctx, `Hp${Math.floor (this.counter / 12) + 1}`, this.pos_x - 8, this.pos_y - 8)
+        if (this.counter + 1 >47)
             this.counter = 0;
         else 
             this.counter++;
@@ -295,8 +295,8 @@ var Hp = Entity.extend ( {
 var Damage = Entity.extend( {
     value: 5,
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Damage${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8)
-        if (this.counter + 1 > 35)
+        spriteManager.drawSprite (ctx, `Damage${Math.floor (this.counter / 12) + 1}`, this.pos_x - 8, this.pos_y - 8)
+        if (this.counter + 1 >47)
             this.counter = 0;
         else 
             this.counter++;
@@ -305,8 +305,8 @@ var Damage = Entity.extend( {
 
 var Flag = Entity.extend( {
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Flag${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8)
-        if (this.counter + 1 > 35)
+        spriteManager.drawSprite (ctx, `Flag${Math.floor (this.counter / 12) + 1}`, this.pos_x - 8, this.pos_y - 8)
+        if (this.counter + 1 >47)
             this.counter = 0;
         else 
             this.counter++;
@@ -315,8 +315,8 @@ var Flag = Entity.extend( {
 
 var Candlestick = Entity.extend( {
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Candlestick${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8)
-        if (this.counter + 1 > 35)
+        spriteManager.drawSprite (ctx, `Candlestick${Math.floor (this.counter / 12) + 1}`, this.pos_x - 8, this.pos_y - 8)
+        if (this.counter + 1 >47)
             this.counter = 0;
         else 
             this.counter++;
@@ -331,8 +331,8 @@ var FireBall = Entity.extend ({
     damage: 20,
     speed: 2,
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `FireBall${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8, this.reverse)
-        if (this.counter + 1 > 35)
+        spriteManager.drawSprite (ctx, `FireBall${Math.floor (this.counter / 12) + 1}`, this.pos_x - 8, this.pos_y - 8, this.reverse)
+        if (this.counter + 1 >47)
             this.counter = 0;
         else 
             this.counter++;
@@ -371,8 +371,8 @@ var FireBall = Entity.extend ({
 var Score = Entity.extend ({
     value: 10,
     draw: function (ctx) {
-        spriteManager.drawSprite (ctx, `Coin${Math.floor (this.counter / 9) + 1}`, this.pos_x - 8, this.pos_y - 8)
-        if (this.counter + 1 > 35)
+        spriteManager.drawSprite (ctx, `Coin${Math.floor (this.counter / 12) + 1}`, this.pos_x - 8, this.pos_y - 8)
+        if (this.counter + 1 >47)
             this.counter = 0;
         else 
             this.counter++;
